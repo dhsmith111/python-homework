@@ -18,7 +18,6 @@
 # Greatest Increase in Profits: Feb-2012 ($1926159)
 # Greatest Decrease in Profits: Sep-2013 ($-2196167)
 #
-#
 # Your final script should print the analysis to the terminal and export a text file with the results.
 #
 #
@@ -42,8 +41,13 @@ with open (csv_pathfile, 'r') as csv_file:
     # pull out the first/header row
     csv_header = next(csv_content)
     
-    # initialize net_profit variable
+    # (Re)set variables
+    total_months = 0
+    budget_data = []
+    greatest_profit_increase_month = ''
+    greatest_profit_decrease_month = ''
     net_profit = 0
+
     # loop through csv_content by row
     for row in csv_content:
 
@@ -56,50 +60,72 @@ with open (csv_pathfile, 'r') as csv_file:
         # add row[1] to the net total amount of Profit/Losses
         net_profit += int(row[1])
 
-        # check if budget_data len is 0 (ie first loop iteration)
+        # check if budget_data len is 1 (ie first loop iteration)
         if len(budget_data) == 1:
-            # set last_month_profit to row[1] to use in next loop iteration
-            last_month_profit = int(row[1])
-            
-            # and set monthly_profit_changes_total to 0 
+            # set first month calculations to 0
+            monthly_profit_diff = 0
             monthly_profit_changes_total = 0
+            greatest_profit_increase = 0
+            greatest_profit_decrease = 0
             
-            print(f'last_month_profit: {last_month_profit}\nmonthly_profit_changes_total: {monthly_profit_changes_total}')
+            # set greatest increase and decrease to first month
+            greatest_profit_increase_month = row[0]
+            greatest_profit_decrease_month = row[0]
+
         else:
             # calculate the differnce in profit between current and last months, and add to monthly_profit_changes_total
             monthly_profit_diff = int(row[1]) - last_month_profit
             monthly_profit_changes_total += monthly_profit_diff
-
-            # and set last_month_profit to row[1] to use in next loop iteration
-            last_month_profit = int(row[1])
-            print(f'last_month_profit: {last_month_profit}\nmonthly_profit_changes_total: {monthly_profit_changes_total}')
+            
+            # check for (and set) current greatest_profit_increase
+            if monthly_profit_diff > greatest_profit_increase:
+                greatest_profit_increase = monthly_profit_diff
+                
+                #Set current month for greats profit increase
+                greatest_profit_increase_month = row[0]
+            
+            # check for (and set) current greatest_profit_decrease
+            if monthly_profit_diff < greatest_profit_decrease:
+                greatest_profit_decrease = monthly_profit_diff
+                
+                #Set current month for greats profit increase
+                greatest_profit_decrease_month = row[0]
+                
+        # set last_month_profit to row[1] to use in next loop iteration
+        last_month_profit = int(row[1])
+        
+        # show values per loop iteration:
+        #print(f'total_months: {total_months}')
+        #print(f'last_month_profit: {last_month_profit}')
+        #print(f'net_profit: {net_profit}')
+        #print(f'monthly_profit_changes_total: {monthly_profit_changes_total}')
+        #print(f'greatest_profit_increase: {greatest_profit_increase_month} ({greatest_profit_increase})')
+        #print(f'greatest_profit_decrease: {greatest_profit_decrease_month} ({greatest_profit_decrease})\n')
 
 
 # calculate the average of the changes in Profit/Losses over the entire period.
 avg_monthly_change = monthly_profit_changes_total / (total_months - 1) 
 
-# set greatest_increase to 0
-greatest_increase = 0
-
-# 
-# loop through dates and amounts in budget_data to calculate the greatest increase in profits (date and amount) over the entire period.
-for date,amount in budget_data:
-
-# check if amount is larger than greatest_increase, if so set it as new greatest_increase, then set greatest_increase_date to date
-    if amount > greatest_increase:
-        greatest_increase = amount
-        greatest_increase_date = date
-                          
-# calculate the greatest increase in profits (date and amount) over the entire period.
-# calculate the greatest decrease in losses (date and amount) over the entire period
-
-# output results to stdout and to file
+#Print results
 print('Financial Analysis')
-print('--------------------------------')
+print('--------------------------')
 print(f'Total Months: {total_months}')
-print(f'Total:          ${net_profit}')
-print(f'Average Change: ${avg_monthly_change}')
-# Average  Change: $-2315.12
-# Greatest Increase in Profits: Feb-2012 ($1926159)
-# Greatest Decrease in Profits: Sep-2013 ($-2196167)
+print(f'Total: ${net_profit}')
+print(f'Average Change: ${round(avg_monthly_change,2)}')
+print(f'Greatest Increase in Profits: {greatest_profit_increase_month} (${greatest_profit_increase})')
+print(f'Greatest Decrease in Profits: {greatest_profit_decrease_month} (${greatest_profit_decrease})')
 
+# set output path and file
+output_pathfile = Path('./output.txt')
+#print(output_pathfile)
+
+# open file object for writing output
+with open(output_pathfile, 'w') as outfile:
+    # write results to file
+    outfile.write('Financial Analysis\n')
+    outfile.write('--------------------------\n')
+    outfile.write(f'Total Months: {total_months}\n')
+    outfile.write(f'Total: ${net_profit}\n')
+    outfile.write(f'Average Change: ${round(avg_monthly_change,2)}\n')
+    outfile.write(f'Greatest Increase in Profits: {greatest_profit_increase_month} (${greatest_profit_increase})\n')
+    outfile.write(f'Greatest Decrease in Profits: {greatest_profit_decrease_month} (${greatest_profit_decrease})')
